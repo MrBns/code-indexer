@@ -26,7 +26,9 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
