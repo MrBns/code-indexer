@@ -11,10 +11,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
-  DEFAULT_CONFIG_FILE,
+  DOT_CONFIG_FILE,
   type IndexerConfig,
   loadConfig,
-  PACKAGE_JSON_CONFIG_KEY,
+  MANIFEST_CONFIG_KEY,
   type TargetConfig,
 } from "./config.ts";
 import {
@@ -35,7 +35,7 @@ Usage:
   code-indexer git-diff  [options]   update index files from staged changes only
 
 Options:
-  --config <path>  config file (default: "${PACKAGE_JSON_CONFIG_KEY}" field in package.json, or ${DEFAULT_CONFIG_FILE})
+  --config <path>  config file (default: ${DOT_CONFIG_FILE}, else "${MANIFEST_CONFIG_KEY}" field in package.json/deno.json — inline object or path string)
   --out <dir>      output directory override (default: config outDir, .agents/index)
   -h, --help       show this help
 `;

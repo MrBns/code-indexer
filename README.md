@@ -24,9 +24,17 @@ staged (the pre-commit `git-diff` mode picks them up), never while untracked.
 
 ## Config
 
-Resolution order: `--config <path>`, else a `"code-indexer"` field in the
-repo-root `package.json`, else `code-indexer.config.json` at the repo root.
-No dedicated config file is needed — a `package.json` field is enough:
+Resolution order (first match wins):
+
+1. `--config <path>` CLI flag
+2. `.config/code-indexer.json` at the repo root (dot-config convention) —
+   contains the config object directly; the `"code-indexer"` wrapper key is
+   only for manifest files
+3. A `"code-indexer"` field in `package.json`, then `deno.json` — either an
+   **inline config object** or a **string path** to a JSON config file
+   (relative to the repo root; `deno.jsonc` is not supported)
+
+No dedicated config file is needed — a manifest field is enough:
 
 ```json
 {
@@ -38,6 +46,8 @@ No dedicated config file is needed — a `package.json` field is enough:
   }
 }
 ```
+
+Or point the field at a file instead: `"code-indexer": "./configs/indexer.json"`.
 
 All other fields are optional (defaults shown):
 

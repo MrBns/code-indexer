@@ -1,7 +1,8 @@
 /**
  * Loads and validates the indexer configuration into a fully-defaulted
- * config. Resolution order: explicit --config file, the `code-indexer`
- * field of the repo-root package.json, then `code-indexer.config.json`.
+ * config. Resolution order: explicit --config file, `.config/code-indexer.json`,
+ * then a `code-indexer` field in package.json or deno.json — where the field
+ * is either an inline config object or a string path to a JSON config file.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -31,8 +32,12 @@ export interface IndexerConfig {
   targets: TargetConfig[];
 }
 
-export const DEFAULT_CONFIG_FILE = "code-indexer.config.json";
-export const PACKAGE_JSON_CONFIG_KEY = "code-indexer";
+/** Repo-relative path of the dedicated config file (dot-config convention). */
+export const DOT_CONFIG_FILE = ".config/code-indexer.json";
+/** Field name probed in manifest files for embedded or referenced config. */
+export const MANIFEST_CONFIG_KEY = "code-indexer";
+/** Manifest files probed for the config field, in priority order. */
+const MANIFEST_FILES = ["package.json", "deno.json"];
 
 const TRAILING_SLASHES = /\/+$/;
 
@@ -122,20 +127,28 @@ const resolveRawConfig = (
   if (explicitPath) {
     return readJsonFile(explicitPath);
   }
-  const packageJsonPath = path.join(repoRoot, "package.json");
-  if (existsSync(packageJsonPath)) {
-    const packageJson = asRecord(readJsonFile(packageJsonPath), "package.json");
-    const embedded = packageJson[PACKAGE_JSON_CONFIG_KEY];
-    if (embedded !== undefined) {
-      return embedded;
-    }
+  const dotConfigPath = path.join(repoRoot, DOT_CONFIG_FILE);
+  if (existsSync(dotConfigPath)) {
+    return readJsonFile(dotConfigPath);
   }
-  const standalonePath = path.join(repoRoot, DEFAULT_CONFIG_FILE);
-  if (existsSync(standalonePath)) {
-    return readJsonFile(standalonePath);
+  for (const manifestName of MANIFEST_FILES) {
+    const manifestPath = path.join(repoRoot, manifestName);
+    if (!existsSync(manifestPath)) {
+      continue;
+    }
+    const manifest = asRecord(readJsonFile(manifestPath), manifestName);
+    const fieldValue = manifest[MANIFEST_CONFIG_KEY];
+    if (fieldValue === undefined) {
+      continue;
+    }
+    // A string field points at a JSON config file; anything else is inline config.
+    if (typeof fieldValue === "string") {
+      return readJsonFile(path.resolve(repoRoot, fieldValue));
+    }
+    return fieldValue;
   }
   throw new Error(
-    `No config found: add a "${PACKAGE_JSON_CONFIG_KEY}" field to package.json, create ${DEFAULT_CONFIG_FILE}, or pass --config <path>`
+    `No config found. Provide one of (in priority order): ${DOT_CONFIG_FILE}, a "${MANIFEST_CONFIG_KEY}" field in package.json or deno.json (inline object or a path string to a JSON file), or pass --config <path>`
   );
 };
 
