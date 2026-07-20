@@ -88,9 +88,12 @@ the full schema.
 
 ## Working on this package
 
-- `pnpm build` — bundles with tsdown to `dist/cli.mjs`. Local dev needs no
-  build: the `bin` points at `src/cli.ts` (Node ≥ 23.6 type-stripping);
-  `publishConfig` swaps it to `dist/cli.mjs` for npm consumers.
+- `pnpm build` — bundles with tsdown to `dist/cli.mjs`, which is what the
+  `bin` points at. For local dev without a build, run `node src/cli.ts`
+  directly (Node ≥ 23.6 type-stripping). Do NOT point `bin` at `src/cli.ts`:
+  npm consumers can't run TypeScript from node_modules (v0.1.0 shipped
+  broken exactly this way), and `publishConfig.bin` overrides only apply
+  with `pnpm publish` — not `npm publish`.
 - `pnpm check-types` — `tsc --noEmit`.
 - Keep the source **erasable-syntax only** (no enums/namespaces) so it stays
   runnable via Node type-stripping.

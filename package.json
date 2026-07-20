@@ -1,6 +1,6 @@
 {
   "name": "@mrbns/code-indexer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate greppable per-target indexes of every exported symbol in a TypeScript repo, built for AI-agent code navigation.",
   "keywords": [
     "typescript",
@@ -21,8 +21,9 @@
     "url": "https://github.com/mrbns/code-indexer/issues"
   },
   "type": "module",
+  "main": "./dist/cli.mjs",
   "bin": {
-    "code-indexer": "./src/cli.ts"
+    "code-indexer": "./dist/cli.mjs"
   },
   "files": [
     "dist",
@@ -34,11 +35,7 @@
     "node": ">=20"
   },
   "publishConfig": {
-    "access": "public",
-    "bin": {
-      "code-indexer": "./dist/cli.mjs"
-    },
-    "main": "./dist/cli.mjs"
+    "access": "public"
   },
   "scripts": {
     "build": "tsdown",
